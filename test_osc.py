@@ -66,9 +66,7 @@ class Matrix(object):
     def handle_timeout(self):
         self.timed_out = True
 
-<<<<<<< HEAD
     def joystick_callback(self, path, tags, args, source):
-        print(args)
         self.pong.update_sticks(*args)
 
     def mode_callback(self, path, tags, args, source):
@@ -81,7 +79,6 @@ class Matrix(object):
         self.led.update()
 
     def coin_callback(self, path, tags, args, source):
-        print("Got a coin!!!")
         self.led.all_off()
         self.led.update()
         count = 0
