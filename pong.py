@@ -4,7 +4,7 @@ from random import randrange
 
 class Pong:
 
-    screensize = [64, 32]
+    screensize = None
     ballSize = 2;
     paddleSize = [2, 6];
     ballVert = 1
@@ -15,9 +15,9 @@ class Pong:
     playerPositions = None
     ballPos = None
     
-    def __init__(self, led):
-        print("making pong")
+    def __init__(self, led, screenx=64, screeny=32):
         self.led = led
+        self.screensize = [screenx, screeny]
         self.initialize()
 
     def initialize(self):
@@ -66,12 +66,12 @@ class Pong:
             self.score[other_player] += 1
             self.resetBall()
             
-        if self.score[0] == 1:
+        if self.score[0] == 23:
             self.led.drawText("P1 WINS!!", 6, 12, size=1, color=colors.Pink)
             self.led.update()
             sleep(2)
             self.reset()
-        elif self.score[1] == 1:
+        elif self.score[1] == 23:
             self.led.drawText("P2 WINS!!", 6, 12, size=1, color=colors.Blue)
             self.led.update()
             sleep(2)
@@ -100,11 +100,11 @@ class Pong:
         self.drawBall()
         self.drawScore()
         
-    def run(self):
-        self.running = True
-        while self.running:
-            self.led.all_off()
-            self.step()
-            self.led.update()
-            sleep(0.05)
+    # def run(self):
+    #     self.running = True
+    #     while self.running:
+    #         self.led.all_off()
+    #         self.step()
+    #         self.led.update()
+    #         sleep(0.05)
 
