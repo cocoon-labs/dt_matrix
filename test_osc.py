@@ -11,6 +11,7 @@ import ImageDraw
 from rgbmatrix import Adafruit_RGBmatrix
 from pong import Pong
 from scope import Scope
+from color_wheel import ColorWheel
 import threading
 import os
 
@@ -21,6 +22,7 @@ class Matrix(object):
     modes = []
     running = False
     color = None
+    wheel = None
 
     pong = None
     scope = None
@@ -47,6 +49,7 @@ class Matrix(object):
                       self.direct_control, self.arcade, self.mindfuck]
 
         self.color = colors.Salmon
+        self.wheel = ColorWheel()
 
         self.running = True
 
@@ -54,7 +57,9 @@ class Matrix(object):
         
         self.pong = Pong(self.led)
         
-        self.scope = Scope(self.led)
+        self.scope = Scope(self.led, self.wheel)
+
+        self.scheme = []
         
         # funny python's way to add a method to an instance of a class
         # import types
@@ -64,6 +69,9 @@ class Matrix(object):
         # self.server.addMsgHandler("/color", self.color_callback)
         # self.server.addMsgHandler("/quit", self.quit_callback)
         self.server.addMsgHandler("/js", self.joystick_callback)
+        self.server.addMsgHandler("/pot", self.pot_callback)
+        self.server.addMsgHandler("/fad", self.fader_callback)
+        self.server.addMsgHandler("/scheme", self.scheme_callback)
 
     # this method of reporting timeouts only works by convention
     # that before calling handle_request() field .timed_out is 
@@ -71,20 +79,27 @@ class Matrix(object):
     def handle_timeout(self):
         self.timed_out = True
 
-
     # TODO: update this to take all the joysticks and send them off selectively
     def joystick_callback(self, path, tags, args, source):
+        print(args)
         if self.pong_running:
-            self.pong.update_sticks(*args)
+            self.pong.update_sticks(args[0], args[4])
         elif self.scope_running:
-            self.scope.update_sticks(*args)
+            self.scope.update_sticks(args)
+
+    def pot_callback(self, path, tags, args, source):
+        if self.scope_running:
+            self.scope.update_pots(args)
+
+    def fader_callback(self, path, tags, args, source):
+        if self.scope_running:
+            self.scope.update_faders(args)
 
     def mode_callback(self, path, tags, args, source):
         self.scope_running = True
         self.led.all_off()
-        if self.mode == 5 and int(args[0]) != 5:
+        if (self.mode == 5 and int(args[0]) != 5):
             self.pong_running = False
-
         self.mode =int(args[0])
         self.modes[self.mode]()
         self.led.update()
@@ -105,14 +120,12 @@ class Matrix(object):
         self.modes[self.mode]()
         self.led.update()
 
-    def color_callback(self, path, tags, args, source):
-        self.color = (int(args[0]), 
-                      int(args[1]),
-                      int(args[2]))
-        self.led.all_off()
-        self.modes[self.mode]()
-        self.led.update()
-
+    def scheme_callback(self, path, tags, args, source):
+        self.scheme = []
+        for i in xrange(0, len(args), 3):
+            self.scheme.append(args[i:i+3])
+        self.wheel.setScheme(self.scheme)
+    
     def quit_callback(self, path, tags, args, source):
         print("quit blender")
         # don't do this at home (or it'll quit blender)
@@ -169,6 +182,7 @@ class Matrix(object):
     def mindfuck(self):
         self.led.drawText("Y U NO", 6, 5, size=1, color=self.color)
         self.led.drawText("LISTEN?!", 6, 15, size=1, color=self.color)
+        self.scope_running = False
 
     def run(self):
         while self.running:
