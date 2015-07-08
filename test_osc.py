@@ -1,5 +1,5 @@
 #!/usr/bin/env python2.7
-from OSC import OSCServer
+from OSC import OSCServer, ThreadingOSCServer
 import sys
 from time import sleep
 from adamatrix import DriverAdaMatrix
@@ -66,12 +66,12 @@ class Matrix(object):
         # self.server.handle_timeout = types.MethodType(lambda: self.handle_timeout(self), self.server)
         self.server.addMsgHandler("/mode", self.mode_callback)
         self.server.addMsgHandler("/coin", self.coin_callback)
-        # self.server.addMsgHandler("/color", self.color_callback)
-        # self.server.addMsgHandler("/quit", self.quit_callback)
         self.server.addMsgHandler("/js", self.joystick_callback)
         self.server.addMsgHandler("/pot", self.pot_callback)
         self.server.addMsgHandler("/fad", self.fader_callback)
+        self.server.addMsgHandler("/beam", self.beam_callback)
         self.server.addMsgHandler("/scheme", self.scheme_callback)
+        self.server.addMsgHandler("/sleep", self.sleep_callback)
 
     # this method of reporting timeouts only works by convention
     # that before calling handle_request() field .timed_out is 
@@ -81,7 +81,6 @@ class Matrix(object):
 
     # TODO: update this to take all the joysticks and send them off selectively
     def joystick_callback(self, path, tags, args, source):
-        print(args)
         if self.pong_running:
             self.pong.update_sticks(args[0], args[4])
         elif self.scope_running:
@@ -94,6 +93,10 @@ class Matrix(object):
     def fader_callback(self, path, tags, args, source):
         if self.scope_running:
             self.scope.update_faders(args)
+
+    def beam_callback(self, path, tags, args, source):
+        if self.scope_running:
+            self.scope.update_beam(args[0])
 
     def mode_callback(self, path, tags, args, source):
         self.scope_running = True
@@ -125,11 +128,13 @@ class Matrix(object):
         for i in xrange(0, len(args), 3):
             self.scheme.append(args[i:i+3])
         self.wheel.setScheme(self.scheme)
-    
-    def quit_callback(self, path, tags, args, source):
-        print("quit blender")
-        # don't do this at home (or it'll quit blender)
-        self.running = False
+
+    def sleep_callback(self, path, tags, args, source):
+        print("sleep plz")
+        self.scope_running = False
+        self.pong_running = False
+        self.led.all_off()
+        self.led.update()
 
     # user script that's called by the game engine every frame
     def each_frame(self):

@@ -55,8 +55,21 @@ class Pong:
             self.led.drawLine(self.screensize[0] - self.score[1], 0, self.screensize[0]-1, 0, colors.Yellow)
 
     def update_sticks(self, js1, js2):
-        self.playerPositions[0] = self.playerPositions[0] + js1
-        self.playerPositions[1] = self.playerPositions[1] + js2
+        if js1 == 1 or js1 == 4:
+            self.playerPositions[0] = self.playerPositions[0] + -1 
+        elif js1 == 2 or js1 == 3:
+            self.playerPositions[0] = self.playerPositions[0] + 1
+
+        if js2 == 1 or js2 == 4:
+            self.playerPositions[1] = self.playerPositions[1] + -1 
+        elif js2 == 2 or js2 == 3:
+            self.playerPositions[1] = self.playerPositions[1] + 1
+
+        for i, p in enumerate(self.playerPositions):
+            if p + self.paddleSize[1]/2 == self.screensize[1]:
+                self.playerPositions[i] -= 1
+            elif p - self.paddleSize[1]/2 == 0:
+                self.playerPositions[i] += 1
 
     def recordFault(self, player):
         other_player = 1 if player == 0 else 0

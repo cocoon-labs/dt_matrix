@@ -1,8 +1,8 @@
 class ColorWheel:
     
-    scheme = [(255, 0, 0),
-              (0, 255, 0),
-              (0, 0, 255)]
+    scheme = [[255, 0, 0],
+              [0, 255, 0],
+              [0, 0, 255]]
     wheelPos = 0
 
     def setScheme(self, scheme):
