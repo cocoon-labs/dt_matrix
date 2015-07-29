@@ -20,6 +20,7 @@ class Matrix(object):
     modes = []
     running = False
     color = None
+
     pong = None
 
     mode = 0;
@@ -51,12 +52,12 @@ class Matrix(object):
         self.pong = Pong(self.led)
 
         # funny python's way to add a method to an instance of a class
-        import types
+        # import types
         # self.server.handle_timeout = types.MethodType(lambda: self.handle_timeout(self), self.server)
         self.server.addMsgHandler("/mode", self.mode_callback)
         self.server.addMsgHandler("/coin", self.coin_callback)
         # self.server.addMsgHandler("/color", self.color_callback)
-        self.server.addMsgHandler("/quit", self.quit_callback)
+        # self.server.addMsgHandler("/quit", self.quit_callback)
         self.server.addMsgHandler("/js", self.joystick_callback)
 
     # this method of reporting timeouts only works by convention
@@ -65,6 +66,7 @@ class Matrix(object):
     def handle_timeout(self):
         self.timed_out = True
 
+<<<<<<< HEAD
     def joystick_callback(self, path, tags, args, source):
         print(args)
         self.pong.update_sticks(*args)
@@ -155,7 +157,6 @@ class Matrix(object):
         while self.running:
             sleep(1)
             self.each_frame()
-                               
 
 if __name__ == "__main__":
     mat = None
